@@ -22,6 +22,7 @@ async function run() {
     await client.connect();
     const database = client.db('drone-store');
     const productsCollection = database.collection('products');
+    const ordersCollection = database.collection('orders');
 
     // get api for products
     app.get('/drones', async (req, res) => {
@@ -40,6 +41,31 @@ async function run() {
       const orders = req.body;
       const result = await ordersCollection.insertOne(orders);
       res.json(result);
+    });
+    // get api for order
+    app.get('/orders', async (req, res) => {
+      const cursor = await ordersCollection.find({}).toArray();
+      res.send(cursor);
+    });
+    // delete api for order
+    app.delete('/orders/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await ordersCollection.deleteOne(query);
+      res.send(result);
+    });
+    // post api for products
+    app.post('/products', async (req, res) => {
+      const products = req.body;
+      const result = productsCollection.insertOne(products);
+      res.json(result);
+    });
+    // delete api for products
+    app.delete('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
+      res.send(result);
     });
   } finally {
     // await client.close();
