@@ -11,7 +11,6 @@ app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.8ppmn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-console.log(uri);
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -23,6 +22,7 @@ async function run() {
     const database = client.db('drone-store');
     const productsCollection = database.collection('products');
     const ordersCollection = database.collection('orders');
+    const usersCollection = database.collection('users');
 
     // get api for products
     app.get('/drones', async (req, res) => {
@@ -66,6 +66,22 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const result = await productsCollection.deleteOne(query);
       res.send(result);
+    });
+    // get api for login user
+    app.get('/myOrders', async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      console.log(query);
+      const cursor = ordersCollection.find(query);
+      const result = await cursor.toArray();
+      console.log(result);
+      res.send(result);
+    });
+    // post api for users
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const cursor = await usersCollection.insertOne(user);
+      res.send(cursor);
     });
   } finally {
     // await client.close();
