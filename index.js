@@ -23,6 +23,7 @@ async function run() {
     const productsCollection = database.collection('products');
     const ordersCollection = database.collection('orders');
     const usersCollection = database.collection('users');
+    const reviewsCollection = database.collection('reviews');
 
     // get api for products
     app.get('/drones', async (req, res) => {
@@ -67,7 +68,7 @@ async function run() {
       const result = await productsCollection.deleteOne(query);
       res.send(result);
     });
-    // get api for login user
+    // get api for orders of login user
     app.get('/myOrders', async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
@@ -81,6 +82,35 @@ async function run() {
     app.post('/users', async (req, res) => {
       const user = req.body;
       const cursor = await usersCollection.insertOne(user);
+      res.send(cursor);
+    });
+    app.get('/users/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === 'admin') {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    });
+    app.put('/users/admin', async (req, res) => {
+      const user = req.body;
+      console.log('put', user);
+      const filter = { email: user.email };
+      const updateDoc = { $set: { role: 'admin' } };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.json(result);
+    });
+    // post api for review
+    app.post('/review', async (req, res) => {
+      const review = req.body;
+      const cursor = await reviewsCollection.insertOne(review);
+      res.send(cursor);
+    });
+    // get api for review
+    app.get('/reviews', async (req, res) => {
+      const cursor = await reviewsCollection.find({}).toArray();
       res.send(cursor);
     });
   } finally {
