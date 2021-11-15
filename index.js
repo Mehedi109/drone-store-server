@@ -113,6 +113,21 @@ async function run() {
       const cursor = await reviewsCollection.find({}).toArray();
       res.send(cursor);
     });
+    // update status
+    app.put('/updateStatus/:id', (req, res) => {
+      const id = req.params.id;
+      const updatedStatus = req.body.status;
+      const result = ordersCollection.find({});
+      console.log(result);
+      const filter = { _id: ObjectId(id) };
+      ordersCollection
+        .updateOne(filter, {
+          $set: { status: updatedStatus },
+        })
+        .then((result) => {
+          res.send(result);
+        });
+    });
   } finally {
     // await client.close();
   }
